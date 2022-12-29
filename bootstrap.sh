@@ -5,10 +5,9 @@ subscription="84d9ff66-efb7-49ce-bbca-e4ea915b5d86"
 resource_group_name="zbc-aks-wordpress-dev"
 aks_name="zbc-aks-dev"
 location="westus3"
+
+
 echo "Deploying Wordpress on Azure AKS..."
-#set subscription
-echo "Setting subscription"
-az account set --subscription  $subscription
 
 echo "Checking for required Azure CLI tools..."
 
@@ -34,6 +33,13 @@ if ! [[ "$resource_group_name" =~ ^[a-zA-Z0-9_][a-zA-Z0-9_-]*[a-zA-Z0-9_]$ ]]; t
     echo "Error: Invalid resource group name"
     exit 1
 fi
+# Setting subscription
+echo "Setting subscription"
+az account set --subscription  $subscription  || {
+    echo "Error: Setting the subscription failed."
+    exit 1
+}
+
 
 echo "Creating resource group..."
 
