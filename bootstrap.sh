@@ -57,23 +57,18 @@ az aks get-credentials --resource-group $resource_group_name --name $aks_name ||
 
 echo "Deploying Wordpress..."
 
-# Deploy Wordpress
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/website/master/content/en/examples/application/wordpress/mysql-deployment.yaml || {
-    echo "Error: Failed to deploy MySQL"
+echo "Installing Helm Tiller on AKS cluster..."
+
+# Install Helm Tiller on the AKS cluster
+kubectl -n kube-system create serviceaccount tiller
+kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
+helm init --service-account tiller || {
+    echo "Error: Failed to install Helm Tiller"
     exit 1
 }
 
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/website/master/content/en/examples/application/wordpress/wordpress-deployment.yaml || {
-    echo "Error: Failed to deploy Wordpress"
-    exit 1
-}
+echo "Deploying Wordpress using Helm..."
 
-echo "Exposing Wordpress service..."
-
-# Expose Wordpress service
-kubectl expose deployment wordpress --type=LoadBalancer --port=80 --target-port=80 || {
-    echo "Error: Failed to expose Wordpress service"
-    exit 1
-}
-
-echo "Wordpress deployed successfully!"
+# Deploy Wordpress using Helm
+helm install stable/wordpress --set mariadb.persistence.enabled=true --set mariadb.persistence.existingClaim=azure-dynamic-pvc --set wordpressUsername=admin,wordpressPassword=password,mariadb.mariadbRootPassword=password || {
+    echo "Error: Failed to deploy Wordpress using Helm"
