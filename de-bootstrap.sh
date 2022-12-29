@@ -26,11 +26,6 @@ if ! command -v az > /dev/null; then
     exit 1
 fi
 
-if ! command -v kubectl > /dev/null; then
-    echo "Error: kubectl is not installed"
-    exit 1
-fi
-
 echo "Deleting AKS cluster..."
 
 # Delete the AKS cluster

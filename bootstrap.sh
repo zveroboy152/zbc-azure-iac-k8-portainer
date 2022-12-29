@@ -22,6 +22,10 @@ if ! command -v kubectl > /dev/null; then
     echo "Error: kubectl is not installed"
     exit 1
 fi
+if ! command -v helm > /dev/null; then
+    echo "Error: helm is not installed"
+    exit 1
+fi
 
 echo "Validating resource group name..."
 
@@ -50,25 +54,40 @@ az aks create --resource-group $resource_group_name --name $aks_name --node-coun
 echo "Retrieving AKS credentials..."
 
 # Get AKS credentials
-az aks get-credentials --resource-group $resource_group_name --name $aks_name || {
+az aks get-credentials --resource-group $resource_group_name --name $aks_name  --overwrite-existing || {
     echo "Error: Failed to retrieve AKS credentials"
     exit 1
 }
 
-echo "Deploying Wordpress..."
+# Install the HELM repo and update repo
 
-echo "Installing Helm Tiller on AKS cluster..."
-
-# Install Helm Tiller on the AKS cluster
-kubectl -n kube-system create serviceaccount tiller
-kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
-helm init --service-account tiller || {
-    echo "Error: Failed to install Helm Tiller"
+helm repo add portainer https://portainer.github.io/k8s/ || {
+    echo "Error:Failed to add Portainer Repo"
+    exit 1
+}
+helm repo update || {
+    echo "Error:Failed to Update the helm repos that are currently added."
     exit 1
 }
 
-echo "Deploying Wordpress using Helm..."
+# Install Portainer
+kubectl create namespace portainer|| {
+    echo "Error:Failed to create namespace Portainer"
+    exit 1
+}
+helm install -n portainer portainer portainer/portainer --set service.type=LoadBalancer|| {
+    echo "Error: Failed to deploy Portainer"
+    exit 1
+}
 
-# Deploy Wordpress using Helm
-helm install stable/wordpress --set mariadb.persistence.enabled=true --set mariadb.persistence.existingClaim=azure-dynamic-pvc --set wordpressUsername=admin,wordpressPassword=password,mariadb.mariadbRootPassword=password || {
-    echo "Error: Failed to deploy Wordpress using Helm"
+echo "Portainer has been deployed!
+
+If your portainer GUIs ADMIN signup page has timed out, please restart the service:
+
+-Get your pods
+kubectl get pods -n portainer
+
+-Reset the pods
+kubectl get pod portainer-579f4c744d-95h6b -n portainer  -o yaml | kubectl replace --force -f -
+
+"
