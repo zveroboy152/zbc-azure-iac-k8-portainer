@@ -25,7 +25,6 @@ if ! command -v helm > /dev/null; then
     echo "Error: helm is not installed"
     exit 1
 fi
-
 echo "Validating resource group name..."
 
 # Validate resource group name
@@ -93,7 +92,7 @@ If your portainer GUIs ADMIN signup page has timed out, please restart the servi
 -Get your pods
 kubectl get pods -n portainer
 
--Reset the pods
+-Reset the pods 'replace the pod name with your own pod name'
 kubectl get pod portainer-579f4c744d-95h6b -n portainer  -o yaml | kubectl replace --force -f -
 
 "
