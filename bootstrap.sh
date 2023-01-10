@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # Set variables
-subscription="84d9ff66-efb7-49ce-bbca-e4ea915b5d86"
-resource_group_name="zbc-aks-wordpress-dev"
-aks_name="zbc-aks-dev"
-location="westus3"
+subscription=""
+resource_group_name=""
+aks_name=""
+location=""
 
 
-echo "Deploying Wordpress on Azure AKS..."
+echo "Deploying Portainer on Azure AKS..."
 
 echo "Checking for required Azure CLI tools..."
 
